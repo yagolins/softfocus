@@ -1,6 +1,7 @@
 package com.yago.softfocus.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -8,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.yago.softfocus.dto.DadosPlaylistTemperaturaDTO;
 import com.yago.softfocus.service.PlaylistService;
 
 @RestController
@@ -20,13 +21,15 @@ public class PlaylistRest {
 	private PlaylistService service;
 
 	@GetMapping("/listByNomeCidade/{nomeCidade}")
-    public void listarPlaylistPorNomeCidade(@PathVariable(name = "nomeCidade") String nomeCidade) throws RestClientException, Exception {
-		service.buscaPorCidade(nomeCidade);
+    public ResponseEntity<DadosPlaylistTemperaturaDTO> listarPlaylistPorNomeCidade(@PathVariable(name = "nomeCidade") String nomeCidade) throws RestClientException, Exception {
+		DadosPlaylistTemperaturaDTO dto = service.buscaPorCidade(nomeCidade);
+		return ResponseEntity.ok(dto);
     }
 	
-	@GetMapping("/listByCoordenadas")
-    public String listarPlaylistPorCoordenadas(@PathVariable(name = "latitude") String latitude,
+	@GetMapping("/listByCoordenadas/{latitude}/{longitude}")
+    public ResponseEntity<DadosPlaylistTemperaturaDTO> listarPlaylistPorCoordenadas(@PathVariable(name = "latitude") String latitude,
     		@PathVariable(name = "longitude") String longitude) throws RestClientException, Exception {
-		return service.buscaPorCoordenadas(latitude, longitude);
+		DadosPlaylistTemperaturaDTO dto = service.buscaPorCoordenadas(latitude, longitude);
+		return ResponseEntity.ok(dto);
     }
 }

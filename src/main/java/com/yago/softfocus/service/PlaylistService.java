@@ -9,50 +9,59 @@ import org.springframework.web.client.RestTemplate;
 
 import com.yago.softfocus.constantes.Constantes;
 import com.yago.softfocus.dto.DadosPlaylistTemperaturaDTO;
+import com.yago.softfocus.enums.CategoriaEnum;
 import com.yago.softfocus.model.WeatherData;
 
 @Service
 public class PlaylistService {
-	
+
 	@Autowired
 	private SpotifyService spotifyService;
 	
-	private static final RestTemplate restTemplate = new RestTemplate();
-	
-	//https://api.openweathermap.org/data/2.5/weather?lat=-12.3857&lon=-46.5711&appid=6801fe9e74c3fd9d5a5b0ea6b668d7af&units=metric
-	//https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API key}&units=metric
-	//https://api.openweathermap.org/data/2.5/weather?q=Taguatinga&appid=6801fe9e74c3fd9d5a5b0ea6b668d7af&units=metric
-	//https://api.openweathermap.org/data/2.5/weather?q={cityname}&appid={API key}&units=metric
+	@Autowired
+	private HistoricoService historicoService;
 
-	public void buscaPorCidade(String nomeCidade) throws RestClientException, Exception {
-		buscarPlaylistPorTemperatura(restTemplate.getForObject("https://api.openweathermap.org/data/2.5/weather?q="
-				+ nomeCidade + "&appid=6801fe9e74c3fd9d5a5b0ea6b668d7af&units=metric", WeatherData.class));
+	private static final RestTemplate restTemplate = new RestTemplate();
+
+	public DadosPlaylistTemperaturaDTO buscaPorCidade(String nomeCidade) throws RestClientException, Exception {
+		DadosPlaylistTemperaturaDTO retorno = buscarPlaylistPorTemperatura(
+				restTemplate.getForObject("https://api.openweathermap.org/data/2.5/weather?q=" + nomeCidade
+						+ "&appid=6801fe9e74c3fd9d5a5b0ea6b668d7af&units=metric", WeatherData.class));
+		historicoService.salvar(retorno);
+		return retorno;
 	}
 
-	public String buscaPorCoordenadas(String latitude, String longitude) throws RestClientException, Exception {
-		buscarPlaylistPorTemperatura(restTemplate.getForObject("https://api.openweathermap.org/data/2.5/weather?lat="
-				+latitude+"&lon="+longitude+"&appid=6801fe9e74c3fd9d5a5b0ea6b668d7af&units=metric", WeatherData.class));
-		return null;
+	public DadosPlaylistTemperaturaDTO buscaPorCoordenadas(String latitude, String longitude)
+			throws RestClientException, Exception {
+		DadosPlaylistTemperaturaDTO retorno = buscarPlaylistPorTemperatura(
+				restTemplate.getForObject("https://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon="
+						+ longitude + "&appid=6801fe9e74c3fd9d5a5b0ea6b668d7af&units=metric", WeatherData.class));
+		historicoService.salvar(retorno);
+		return retorno;
 	}
 
 	private DadosPlaylistTemperaturaDTO buscarPlaylistPorTemperatura(WeatherData dadosTemperatura) throws Exception {
-		if (dadosTemperatura.getMain().getTemp()>Constantes.ACIMA_E_FESTA) {
-			return montarRetorno(Constantes.FESTA, spotifyService.getPlaylistPorCategoria(Constantes.FESTA), dadosTemperatura);
-		} else {
-			if (dadosTemperatura.getMain().getTemp()<=Constantes.ACIMA_E_FESTA && dadosTemperatura.getMain().getTemp()>=Constantes.ACIMA_E_POP) {
-				return montarRetorno(Constantes.POP, spotifyService.getPlaylistPorCategoria(Constantes.POP), dadosTemperatura);
-			} else {
-				if (dadosTemperatura.getMain().getTemp()<Constantes.ACIMA_E_POP && dadosTemperatura.getMain().getTemp()>=Constantes.ACIMA_E_ROCK) {
-					return montarRetorno(Constantes.ROCK, spotifyService.getPlaylistPorCategoria(Constantes.ROCK), dadosTemperatura);
-				} else {
-					return montarRetorno(Constantes.CLASSICA, spotifyService.getPlaylistPorCategoria(Constantes.CLASSICA), dadosTemperatura);
-				}
-			}
-		}
+		if (dadosTemperatura.getMain().getTemp() > Constantes.ACIMA_E_FESTA) {
+			return montarRetorno(CategoriaEnum.FESTA, spotifyService.getPlaylistPorCategoria(CategoriaEnum.FESTA),
+					dadosTemperatura);
+		} else if (dadosTemperatura.getMain().getTemp() <= Constantes.ACIMA_E_FESTA
+				&& dadosTemperatura.getMain().getTemp() >= Constantes.ACIMA_E_POP) {
+			return montarRetorno(CategoriaEnum.POP, spotifyService.getPlaylistPorCategoria(CategoriaEnum.POP),
+					dadosTemperatura);
+		} else if (dadosTemperatura.getMain().getTemp() < Constantes.ACIMA_E_POP
+				&& dadosTemperatura.getMain().getTemp() >= Constantes.ACIMA_E_ROCK) {
+			return montarRetorno(CategoriaEnum.ROCK, spotifyService.getPlaylistPorCategoria(CategoriaEnum.ROCK),
+					dadosTemperatura);
+		} else
+			return montarRetorno(CategoriaEnum.CLASSICA, spotifyService.getPlaylistPorCategoria(CategoriaEnum.CLASSICA),
+					dadosTemperatura);
+
 	}
-	
-	private DadosPlaylistTemperaturaDTO montarRetorno(String categoria, ArrayList<String> playlist, WeatherData dadosTemperatura) {
+
+	private DadosPlaylistTemperaturaDTO montarRetorno(CategoriaEnum categoria, ArrayList<String> playlist,
+			WeatherData dadosTemperatura) {
 		DadosPlaylistTemperaturaDTO dto = new DadosPlaylistTemperaturaDTO();
+		dto.setCategoria(categoria);
 		dto.setCoordenadas(dadosTemperatura.getCoord());
 		dto.setPlaylist(playlist);
 		dto.setNomeCidade(dadosTemperatura.getName());
