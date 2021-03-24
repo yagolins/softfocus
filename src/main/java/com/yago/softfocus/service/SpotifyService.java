@@ -7,7 +7,6 @@ import java.util.Random;
 import org.apache.hc.core5.http.ParseException;
 import org.springframework.stereotype.Service;
 
-import com.neovisionaries.i18n.CountryCode;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.specification.Paging;
@@ -17,6 +16,7 @@ import com.wrapper.spotify.requests.data.browse.GetCategorysPlaylistsRequest;
 import com.wrapper.spotify.requests.data.playlists.GetPlaylistRequest;
 import com.yago.softfocus.autenticacao.CredenciaisSpotify;
 import com.yago.softfocus.enums.CategoriaEnum;
+import com.yago.softfocus.exception.SpotifyException;
 
 @Service
 public class SpotifyService {
@@ -24,15 +24,13 @@ public class SpotifyService {
 	private static final SpotifyApi spotifyApi = new SpotifyApi.Builder()
 			.setAccessToken(CredenciaisSpotify.clientCredentials()).build();
 
-	public ArrayList<String> getPlaylistPorCategoria(CategoriaEnum categoria) throws Exception {
+	public ArrayList<String> getPlaylistPorCategoria(CategoriaEnum categoria) {
 		try {
 			String idPlaylist = buscaIdPlaylist(categoria);
 			return buscaMusicasPlaylist(idPlaylist);
-		} catch (IOException | SpotifyWebApiException | ParseException e) {
-			System.out.println("Error: " + e.getMessage());
-			throw new Exception();
+		} catch (ParseException | SpotifyWebApiException | IOException e) {
+			throw new SpotifyException("Não foram encontradas músicas no Spotify!");
 		}
-
 	}
 
 	private String buscaIdPlaylist(CategoriaEnum categoria) throws ParseException, SpotifyWebApiException, IOException {

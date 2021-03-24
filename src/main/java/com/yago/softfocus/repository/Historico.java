@@ -1,5 +1,7 @@
 package com.yago.softfocus.repository;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -39,4 +41,7 @@ public class Historico {
 
 	@Column(name = "NOME_CIDADE", nullable = false)
 	String nomeCidade;
+
+	@Column(name = "DATA_BUSCA", nullable = false)
+	Date dataBusca;
 }
