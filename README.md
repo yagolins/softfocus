@@ -9,3 +9,5 @@ Executar a task bootrun do Gradle
 Por linha de comando
 Na raiz do projeto executar o comando "./gradlew build" para baixar as dependências
 Executar o comando "./gradlew bootrun" para rodar o projeto
+
+Com o postgres instalado e configurado, executar o arquivo "banco.sql" para criar o schema.
